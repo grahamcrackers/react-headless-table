@@ -17,29 +17,29 @@ Typescript support built in and a simpler API.
 
 ## Features
 
-- Type safe
-- Global row filtering
-- Row selection
-- Custom column rendering
-- Column sorting
-- Data memoization for performance
-- **Zero** dependencies
+-   Type safe
+-   Global row filtering
+-   Row selection
+-   Custom column rendering
+-   Column sorting
+-   Data memoization for performance
+-   **Zero** dependencies
 
 ## Table of Contents
 
-- [Motivation](#motivation)
-- [Install](#install)
-- [Demos](#demos)
-  - [CodeSandbox Demo](#codesandbox-demo)
-  - [Material UI Demo](#material-ui-demo)
-- [`useTable`](#usetable)
-- [Examples](#examples)
-  - [Basic example](#basic-example)
-  - [Searching](#searching)
-  - [Row Selection](#row-selection)
-  - [Pagination](#pagination)
-- [Performance](#performance)
-- [Contributing](#contributing)
+-   [Motivation](#motivation)
+-   [Install](#install)
+-   [Demos](#demos)
+    -   [CodeSandbox Demo](#codesandbox-demo)
+    -   [Material UI Demo](#material-ui-demo)
+-   [`useTable`](#usetable)
+-   [Examples](#examples)
+    -   [Basic example](#basic-example)
+    -   [Searching](#searching)
+    -   [Row Selection](#row-selection)
+    -   [Pagination](#pagination)
+-   [Performance](#performance)
+-   [Contributing](#contributing)
 
 ## Motivation
 
@@ -83,12 +83,12 @@ const { headers, rows } = useTable(columns, rows);
 
 ```typescript
 type ColumnType<T> = {
-  name: string;
-  label?: string;
-  hidden?: boolean;
-  sort?: ((a: RowType<T>, b: RowType<T>) => number) | undefined;
-  render?: ({ value, row }: { value: any; row: T }) => React.ReactNode;
-  headerRender?: ({ label }: { label: string }) => React.ReactNode;
+    name: string;
+    label?: string;
+    hidden?: boolean;
+    sort?: ((a: RowType<T>, b: RowType<T>) => number) | undefined;
+    render?: ({ value, row }: { value: any; row: T }) => React.ReactNode;
+    headerRender?: ({ label }: { label: string }) => React.ReactNode;
 };
 ```
 
@@ -103,51 +103,51 @@ type ColumnType<T> = {
 import { useTable } from 'react-final-table';
 
 const columns = [
-  {
-    name: 'firstName',
-    label: 'First Name',
-    render: ({ value }) => <h1>{value}</h1>,
-  },
-  {
-    name: 'lastName',
-    label: 'Last Name',
-  },
+    {
+        name: 'firstName',
+        label: 'First Name',
+        render: ({ value }) => <h1>{value}</h1>,
+    },
+    {
+        name: 'lastName',
+        label: 'Last Name',
+    },
 ];
 
 const data = [
-  {
-    firstName: 'Frodo',
-    lastName: 'Baggins',
-  },
-  {
-    firstName: 'Samwise',
-    lastName: 'Gamgee',
-  },
+    {
+        firstName: 'Frodo',
+        lastName: 'Baggins',
+    },
+    {
+        firstName: 'Samwise',
+        lastName: 'Gamgee',
+    },
 ];
 
 const MyTable = () => {
-  const { headers, rows } = useTable(columns, data);
+    const { headers, rows } = useTable(columns, data);
 
-  return (
-    <table>
-      <thead>
-        <tr>
-          {headers.map((header, idx) => (
-            <th key={idx}>{header.label}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, idx) => (
-          <tr key={idx}>
-            {row.cells.map((cell, idx) => (
-              <td key={idx}>{cell.render()}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+    return (
+        <table>
+            <thead>
+                <tr>
+                    {headers.map((header, idx) => (
+                        <th key={idx}>{header.label}</th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {rows.map((row, idx) => (
+                    <tr key={idx}>
+                        {row.cells.map((cell, idx) => (
+                            <td key={idx}>{cell.render()}</td>
+                        ))}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
 };
 ```
 
@@ -200,47 +200,47 @@ import { useTable } from 'react-final-table';
 import makeData from 'makeData'; // replace this with your own data
 
 function App() {
-  const { columns, rows } = makeData();
+    const { columns, rows } = makeData();
 
-  const { headers, rows, selectRow, selectedRows } = useTable(
-    memoColumns,
-    memoData,
-    {
-      selectable: true,
-    }
-  );
+    const { headers, rows, selectRow, selectedRows } = useTable(
+        memoColumns,
+        memoData,
+        {
+            selectable: true,
+        }
+    );
 
-  return (
-    <>
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            {headers.map((header, idx) => (
-              <th key={idx}>{header.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, idx) => (
-            <tr key={idx}>
-              <td>
-                <input
-                  type="checkbox"
-                  onChange={e => {
-                    selectRow(row.id);
-                  }}
-                />
-              </td>
-              {row.cells.map((cell, idx) => (
-                <td key={idx}>{cell.render()}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  );
+    return (
+        <>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        {headers.map((header, idx) => (
+                            <th key={idx}>{header.label}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row, idx) => (
+                        <tr key={idx}>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    onChange={(e) => {
+                                        selectRow(row.id);
+                                    }}
+                                />
+                            </td>
+                            {row.cells.map((cell, idx) => (
+                                <td key={idx}>{cell.render()}</td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </>
+    );
 }
 ```
 

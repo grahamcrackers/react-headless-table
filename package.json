@@ -1,70 +1,89 @@
 {
-  "version": "1.4.2",
-  "license": "MIT",
-  "author": "Gabriel Abud",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
-  "engines": {
-    "node": ">=10"
-  },
-  "prettier": {
-    "printWidth": 80,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test --passWithNoTests",
-    "test:watch": "tsdx test --passWithNoTests --watch",
-    "test-coverage": "tsdx test --passWithNoTests --collect-coverage",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "watch": "tsdx watch"
-  },
-  "peerDependencies": {
-    "react": ">=16"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
-  },
-  "testEnvironment": "jest-environment-jsdom-sixteen",
-  "name": "react-final-table",
-  "module": "dist/react-final-table.esm.js",
-  "devDependencies": {
-    "@babel/core": "^7.11.4",
-    "@testing-library/jest-dom": "^5.11.3",
-    "@testing-library/react": "^10.4.8",
-    "@testing-library/react-hooks": "^3.4.1",
-    "@types/faker": "^4.1.12",
-    "@types/react": "^16.9.46",
-    "@types/react-dom": "^16.9.8",
-    "babel-loader": "^8.1.0",
-    "codecov": "^3.7.2",
-    "faker": "^4.1.0",
-    "husky": "^4.2.5",
-    "jest-environment-jsdom-sixteen": "^1.0.3",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-is": "^16.13.1",
-    "react-test-renderer": "^16.13.1",
-    "tsdx": "^0.13.2",
-    "tslib": "^2.0.1",
-    "typescript": "^3.9.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Buuntu/react-final-table"
-  },
-  "bugs": {
-    "url": "https://github.com/Buuntu/react-final-table/issues"
-  },
-  "homepage": "https://github.com/Buuntu/react-final-table#readme",
-  "dependencies": {}
+    "name": "react-headless-table",
+    "version": "0.1.1",
+    "license": "MIT",
+    "author": "Graham Rogers",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "engines": {
+        "node": ">=10"
+    },
+    "scripts": {
+        "start": "tsdx watch",
+        "build": "tsdx build",
+        "test": "tsdx test --passWithNoTests",
+        "test:watch": "tsdx test --passWithNoTests --watch",
+        "test-coverage": "tsdx test --passWithNoTests --collect-coverage",
+        "lint": "tsdx lint",
+        "prepare": "tsdx build",
+        "watch": "tsdx watch",
+        "size": "size-limit",
+        "analyze": "size-limit --why",
+        "storybook": "start-storybook -p 6006",
+        "build-storybook": "build-storybook"
+    },
+    "peerDependencies": {
+        "react": ">=16"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "tsdx lint"
+        }
+    },
+    "testEnvironment": "jest-environment-jsdom-sixteen",
+    "module": "dist/react-final-table.esm.js",
+    "devDependencies": {
+        "@babel/core": "^7.12.3",
+        "@size-limit/preset-small-lib": "^4.7.0",
+        "@storybook/addon-essentials": "^6.0.28",
+        "@storybook/addon-info": "^5.3.21",
+        "@storybook/addon-links": "^6.0.28",
+        "@storybook/addons": "^6.0.28",
+        "@storybook/react": "^6.0.28",
+        "@tailwindcss/custom-forms": "^0.2.1",
+        "@tailwindcss/typography": "^0.2.0",
+        "@testing-library/jest-dom": "^5.11.6",
+        "@testing-library/react": "^11.1.2",
+        "@testing-library/react-hooks": "^3.4.2",
+        "@types/faker": "^5.1.4",
+        "@types/react": "^16.9.55",
+        "@types/react-dom": "^16.9.9",
+        "@types/testing-library__jest-dom": "^5.9.5",
+        "@typescript-eslint/eslint-plugin": "^4.6.1",
+        "@typescript-eslint/parser": "^4.6.1",
+        "babel-loader": "^8.1.0",
+        "eslint": "^7.12.1",
+        "eslint-config-prettier": "^6.15.0",
+        "eslint-plugin-prettier": "^3.1.4",
+        "eslint-plugin-react": "^7.21.5",
+        "faker": "^5.1.0",
+        "husky": "^4.3.0",
+        "jest-environment-jsdom-sixteen": "^1.0.3",
+        "miragejs": "^0.1.41",
+        "namor": "^2.0.2",
+        "prettier": "^2.1.2",
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1",
+        "react-is": "^17.0.1",
+        "react-table": "^7.6.2",
+        "react-test-renderer": "^17.0.1",
+        "size-limit": "^4.7.0",
+        "styled-components": "^5.2.1",
+        "tailwindcss": "^1.9.6",
+        "tsdx": "^0.14.1",
+        "tslib": "^2.0.3"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/grahamcrackers/react-headless-table"
+    },
+    "bugs": {
+        "url": "https://github.com/grahamcrackers/react-headless-table/issues"
+    },
+    "homepage": "https://github.com/grahamcrackers/react-headless-table#readme",
+    "dependencies": {}
 }
