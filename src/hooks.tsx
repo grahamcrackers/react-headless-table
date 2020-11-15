@@ -323,14 +323,22 @@ const makeHeaderRender = (label: string, render: HeaderRenderType | undefined) =
     return render ? () => render({ label }) : () => label;
 };
 
+const get = (p: any, o: any) => {
+    return p.reduce((xs: any, x: any) => (xs && xs[x] ? xs[x] : null), o);
+};
+
 const sortDataInOrder = <T extends DataType>(data: T[], columns: ColumnType<T>[]): T[] => {
     return data.map((row: any) => {
         const newRow: any = {};
         columns.forEach((column) => {
-            if (!(column.name in row)) {
-                throw new Error(`Invalid row data, ${column.name} not found`);
-            }
-            newRow[column.name] = row[column.name];
+            // come back for a more robust object check
+            // if (!(column.name in row)) {
+            //     throw new Error(`Invalid row data, ${column.name} not found`);
+            // }
+            // newRow[column.name] = row[column.name];
+
+            const path = column.name.split('.');
+            newRow[column.name] = get(path, row);
         });
         return newRow;
     });

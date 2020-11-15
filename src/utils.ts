@@ -21,3 +21,13 @@ export const byTextDescending = <T extends {}>(getTextProperty: (object: T) => s
     }
     return 0;
 };
+
+/**
+ * get the value of a deeply nested object
+ *
+ * @param p {(string | number)[]} the path in array format. ex: ["user", "messages"]
+ * @param o {Record<string,unknown>} the object or array that is being traversed
+ */
+export const get = (p: (string | number)[], o: Record<string, unknown>) => {
+    return p.reduce((xs: any, x: any) => (xs && xs[x] ? xs[x] : null), o);
+};
