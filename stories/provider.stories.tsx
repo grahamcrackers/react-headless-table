@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { makeData } from './make-data';
 import { useTable } from '../src';
+import { TableProvider, useTableContext } from '../src/context';
 
 const Styles = (styled as any).div`
     padding: 1rem;
@@ -37,7 +38,7 @@ const Styles = (styled as any).div`
 `;
 
 const meta: Meta = {
-    title: 'Table',
+    title: 'Provider',
     // component: ,
     argTypes: {
         children: {
@@ -322,6 +323,42 @@ export const PaginationTable = () => {
     );
 };
 
+const TestTable = () => {
+    const { headers, rows, toggleSort } = useTableContext();
+
+    return (
+        <table>
+            <thead>
+                <tr>
+                    {headers.map((header, idx) => (
+                        <th key={idx} onClick={() => toggleSort(header.name)}>
+                            {header.render()}
+                        </th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {rows.map((row, idx) => (
+                    <tr key={idx}>
+                        {row.cells.map((cell, idx) => (
+                            <td key={idx}>{cell.render()}</td>
+                        ))}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+};
+
+const FromContext = () => {
+    const { headers, rows } = useTableContext();
+
+    return (
+        <pre>
+            <code>{JSON.stringify(headers, null, 4)}</code>
+        </pre>
+    );
+};
 export const SortableTable = () => {
     const columns = React.useMemo(
         () => [
@@ -355,31 +392,38 @@ export const SortableTable = () => {
 
     const memoData = React.useMemo(() => makeData(23), []);
 
-    const { headers, rows, toggleSort, ...rest } = useTable(columns, memoData, { sortable: true });
+    const { headers, rows, toggleSort, ...rest } = useTable(columns, memoData, { sortable: true, manual: true });
 
     return (
-        <Styles>
-            <table>
-                <thead>
-                    <tr>
-                        {headers.map((header, idx) => (
-                            <th key={idx} onClick={() => toggleSort(header.name)}>
-                                {header.render()}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row, idx) => (
-                        <tr key={idx}>
-                            {row.cells.map((cell, idx) => (
-                                <td key={idx}>{cell.render()}</td>
+        <TableProvider columns={columns} data={memoData} options={{ ...rest }}>
+            <Styles>
+                <div style={{ display: 'flex' }}>
+                    <TestTable />
+                    <FromContext />
+                </div>
+
+                {/* <table>
+                    <thead>
+                        <tr>
+                            {headers.map((header, idx) => (
+                                <th key={idx} onClick={() => toggleSort(header.name)}>
+                                    {header.render()}
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        </Styles>
+                    </thead>
+                    <tbody>
+                        {rows.map((row, idx) => (
+                            <tr key={idx}>
+                                {row.cells.map((cell, idx) => (
+                                    <td key={idx}>{cell.render()}</td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table> */}
+            </Styles>
+        </TableProvider>
     );
 };
 
