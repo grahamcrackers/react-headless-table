@@ -14,7 +14,7 @@ import {
     HeaderRenderType,
     ColumnStateType,
 } from './types';
-import { byTextAscending, byTextDescending } from './utils';
+import { byTextAscending, byTextDescending, get } from './utils';
 
 const createReducer = <T extends DataType>() => (state: TableState<T>, action: TableAction<T>): TableState<T> => {
     switch (action.type) {
@@ -72,7 +72,7 @@ const createReducer = <T extends DataType>() => (state: TableState<T>, action: T
             let isAscending = null;
 
             let sortedRows: RowType<T>[] = [];
-
+            console.log(state);
             // loop through all columns and set the sort parameter to off unless
             // it's the specified column (only one column at a time for )
             const columnCopy = state.columns.map((column) => {
@@ -217,6 +217,7 @@ export const useTable = <T extends DataType>(
                     sorted: {
                         on: false,
                     },
+                    filter: column,
                 };
             }),
         [columns],
@@ -323,10 +324,6 @@ const makeHeaderRender = (label: string, render: HeaderRenderType | undefined) =
     return render ? () => render({ label }) : () => label;
 };
 
-const get = (p: any, o: any) => {
-    return p.reduce((xs: any, x: any) => (xs && xs[x] ? xs[x] : null), o);
-};
-
 const sortDataInOrder = <T extends DataType>(data: T[], columns: ColumnType<T>[]): T[] => {
     return data.map((row: any) => {
         const newRow: any = {};
@@ -337,6 +334,8 @@ const sortDataInOrder = <T extends DataType>(data: T[], columns: ColumnType<T>[]
             // }
             // newRow[column.name] = row[column.name];
 
+            // get nested column values with the `get` function, this get function will
+            // also bypass key values if the key is not provided in the object
             const path = column.name.split('.');
             newRow[column.name] = get(path, row);
         });
