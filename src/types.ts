@@ -87,6 +87,7 @@ export interface UseTableOptionsType<T> {
     sortable?: boolean;
     selectable?: boolean;
     pagination?: boolean;
+    manual?: boolean;
     filter?: (row: RowType<T>[]) => RowType<T>[];
 }
 
