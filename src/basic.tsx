@@ -10,7 +10,19 @@ interface Column<T> {
     name: string;
     label?: string;
     hidden?: boolean;
+    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
     render?: ({ value, row }: { value: any; row: T }) => React.ReactNode;
+}
+
+interface ColumnState<T> {
+    name: string;
+    label: string;
+    hidden: boolean;
+    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
+    sorted: {
+        on: boolean;
+        asc?: boolean;
+    };
 }
 
 interface ColumnByNames<T> {
@@ -42,12 +54,28 @@ type Header<T> = {
     name: string;
     label?: string;
     hidden?: boolean;
+    sorted: {
+        on: boolean;
+        asc?: boolean;
+    };
+    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
     render: () => React.ReactNode;
 };
 
 type HeaderRenderType = ({ label }: { label: any }) => React.ReactNode;
 
-const createReducer = <T extends Data>() => (state: any, action: any) => {
+/** State Definition */
+type TableState<T extends Data> = {
+    columnsByName: ColumnByNames<T>;
+    columns: ColumnState<T>[];
+    rows: Row<T>[];
+    originalRows: Row<T>[];
+    sortColumn: string | null;
+};
+
+type TableAction<T extends Data> = { type: 'SET_ROWS'; data: Row<T>[] } | { type: 'TOGGLE_SORT'; columnName: string };
+
+const createReducer = <T extends Data>() => (state: TableState<T>, action: TableAction<T>): TableState<T> => {
     switch (action.type) {
         case 'SET_ROWS':
             const rows = [...action.data];
@@ -56,6 +84,45 @@ const createReducer = <T extends Data>() => (state: any, action: any) => {
                 ...state,
                 rows,
                 originalRows: action.data,
+            };
+        case 'TOGGLE_SORT':
+            if (!(action.columnName in state.columnsByName)) {
+                throw new Error(`Invalid column, ${action.columnName} not found`);
+            }
+
+            let isAscending = null;
+
+            // loop through all columns and set the sort parameter to off unless
+            // it's the specified column (only one column at a time for )
+            const columnCopy = state.columns.map((column) => {
+                // if the row was found
+                if (action.columnName === column.name) {
+                    // if it's undefined, start by setting to ascending, otherwise toggle
+                    isAscending = column.sorted.asc === undefined ? true : !column.sorted.asc;
+
+                    return {
+                        ...column,
+                        sorted: {
+                            on: true,
+                            asc: isAscending,
+                        },
+                    };
+                }
+                // set sorting to false for all other columns
+                return {
+                    ...column,
+                    sorted: {
+                        on: false,
+                        asc: false,
+                    },
+                };
+            });
+
+            return {
+                ...state,
+                columns: columnCopy,
+                sortColumn: action.columnName,
+                columnsByName: getColumnsByName(columnCopy),
             };
         default:
             throw new Error('Invalid reducer action');
@@ -67,10 +134,15 @@ export const useManualTable = <T extends Data>(columns: Column<T>[], data: T[], 
     const mappedColumns = React.useMemo(
         () =>
             columns.map((column) => {
+                // assign values to these fields if not assigned in the columns passed in
                 return {
                     ...column,
                     label: column?.label ?? column.name,
                     hidden: column?.hidden ?? false,
+                    sort: column.sort,
+                    sorted: {
+                        on: false,
+                    },
                 };
             }),
         [columns],
@@ -102,12 +174,14 @@ export const useManualTable = <T extends Data>(columns: Column<T>[], data: T[], 
         return newData;
     }, [data, mappedColumns, columnsByName]);
 
-    const reducer = createReducer();
+    const reducer = createReducer<T>();
+
     const [state, dispatch] = React.useReducer(reducer, {
         columns: mappedColumns,
         columnsByName: columnsByName,
         originalRows: tableData,
         rows: tableData,
+        sortColumn: null,
     });
 
     React.useEffect(() => {
@@ -130,7 +204,8 @@ export const useManualTable = <T extends Data>(columns: Column<T>[], data: T[], 
         headers: headers.filter((column) => !column.hidden),
         rows: state.rows,
         originalRows: state.originalRows,
-        dispatch,
+        dispatch, // not sure we want to expose dispatch here
+        toggleSort: (columnName: string) => dispatch({ type: 'TOGGLE_SORT', columnName }),
     };
 };
 
@@ -181,4 +256,10 @@ const getColumnsByName = <T extends Data>(columns: Column<T>[]): ColumnByNames<T
     });
 
     return columnsByName;
+};
+
+const getPaginatedData = <T extends Data>(rows: Row<T>[], perPage: number, page: number) => {
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    return rows.slice(start, end);
 };

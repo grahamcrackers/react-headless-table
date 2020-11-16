@@ -72,7 +72,7 @@ const createReducer = <T extends DataType>() => (state: TableState<T>, action: T
             let isAscending = null;
 
             let sortedRows: RowType<T>[] = [];
-            console.log(state);
+
             // loop through all columns and set the sort parameter to off unless
             // it's the specified column (only one column at a time for )
             const columnCopy = state.columns.map((column) => {

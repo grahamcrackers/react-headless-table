@@ -86,31 +86,38 @@ const Template: Story = (args) => {
 
     const data = React.useMemo(() => makeData(23), []);
 
-    const { headers, rows } = useManualTable(columns, data);
+    const { headers, rows, toggleSort } = useManualTable(columns, data);
 
     return (
-        <Styles>
-            <table>
-                <thead>
-                    <tr>
-                        {headers.map((header, idx) => (
-                            <th key={idx}>{header.label}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row, idx) => {
-                        return (
-                            <tr key={idx}>
-                                {row.cells.map((cell, idx) => (
-                                    <td key={idx}>{cell.render()}</td>
-                                ))}
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </Styles>
+        <div style={{ display: 'flex' }}>
+            <Styles>
+                <table>
+                    <thead>
+                        <tr>
+                            {headers.map((header, idx) => (
+                                <th key={idx} onClick={() => toggleSort(header.name)}>
+                                    {header.label}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((row, idx) => {
+                            return (
+                                <tr key={idx}>
+                                    {row.cells.map((cell, idx) => (
+                                        <td key={idx}>{cell.render()}</td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </Styles>
+            <pre>
+                <code>{JSON.stringify(headers, null, 4)}</code>
+            </pre>
+        </div>
     );
 };
 
