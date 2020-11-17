@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import React from 'react';
 import { get } from './utils';
 
@@ -5,18 +6,16 @@ interface Column<T> {
     name: string;
     label?: string;
     hidden?: boolean;
-    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
     render?: ({ value, row }: { value: any; row: T }) => React.ReactNode;
 }
 
-interface ColumnState<T> {
+// this was ColumnState<T>
+interface ColumnState {
     name: string;
     label: string;
     hidden: boolean;
-    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
-    sorted: {
-        on: boolean;
-        asc?: boolean;
+    filtered?: {
+        value: string;
     };
 }
 
@@ -28,8 +27,13 @@ interface Data {
     [key: string]: any;
 }
 
+type ManualPaginationOptions = {
+    manual: boolean;
+    pages: number;
+};
+
 interface TableOptions {
-    manual?: boolean;
+    pagination?: boolean | ManualPaginationOptions;
 }
 
 type Cell = {
@@ -41,7 +45,6 @@ interface Row<T extends Data> {
     id: number;
     cells: Cell[];
     hidden?: boolean;
-    selected?: boolean;
     original: T;
 }
 
@@ -49,26 +52,24 @@ type Header<T> = {
     name: string;
     label?: string;
     hidden?: boolean;
-    sorted: {
-        on: boolean;
-        asc?: boolean;
-    };
     sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
     render: () => React.ReactNode;
+    // filter: (name: string, value: string) => void;
 };
 
-type HeaderRenderType = ({ label }: { label: any }) => React.ReactNode;
+type HeaderRender = ({ label }: { label: any }) => React.ReactNode;
 
 /** State Definition */
 type TableState<T extends Data> = {
     columnsByName: ColumnByNames<T>;
-    columns: ColumnState<T>[];
+    columns: ColumnState[];
     rows: Row<T>[];
     originalRows: Row<T>[];
-    sortColumn: string | null;
 };
 
-type TableAction<T extends Data> = { type: 'SET_ROWS'; data: Row<T>[] } | { type: 'TOGGLE_SORT'; columnName: string };
+type TableAction<T extends Data> =
+    | { type: 'SET_ROWS'; data: Row<T>[] }
+    | { type: 'FILTER_COLUMN'; columnName: string; value: string };
 
 const createReducer = <T extends Data>() => (state: TableState<T>, action: TableAction<T>): TableState<T> => {
     switch (action.type) {
@@ -80,54 +81,30 @@ const createReducer = <T extends Data>() => (state: TableState<T>, action: Table
                 rows,
                 originalRows: action.data,
             };
-        case 'TOGGLE_SORT':
-            if (!(action.columnName in state.columnsByName)) {
-                throw new Error(`Invalid column, ${action.columnName} not found`);
-            }
-
-            let isAscending = null;
-
-            // loop through all columns and set the sort parameter to off unless
-            // it's the specified column (only one column at a time for )
-            const columnCopy = state.columns.map((column) => {
-                // if the row was found
+        case 'FILTER_COLUMN':
+            const columnsCopy = state.columns.map((column) => {
+                // if the column name from the action matches a column, add the filtered value to the header state
                 if (action.columnName === column.name) {
-                    // if it's undefined, start by setting to ascending, otherwise toggle
-                    isAscending = column.sorted.asc === undefined ? true : !column.sorted.asc;
-
                     return {
                         ...column,
-                        sorted: {
-                            on: true,
-                            asc: isAscending,
-                        },
+                        filtered: { value: action.value },
                     };
                 }
-                // set sorting to false for all other columns
-                return {
-                    ...column,
-                    sorted: {
-                        on: false,
-                        asc: false,
-                    },
-                };
+                // if we don't match, return the column like nothing happened
+                return { ...column };
             });
 
             return {
                 ...state,
-                columns: columnCopy,
-                sortColumn: action.columnName,
-                columnsByName: getColumnsByName(columnCopy),
+                columns: columnsCopy,
             };
         default:
             throw new Error('Invalid reducer action');
     }
 };
 
-/**
- * @deprecated don't use this
- */
-export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], options?: TableOptions) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const useFilterTable = <T extends Data>(columns: Column<T>[], data: T[], _options?: TableOptions) => {
     // mapping columns to internal state
     const mappedColumns = React.useMemo(
         () =>
@@ -137,10 +114,6 @@ export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], o
                     ...column,
                     label: column?.label ?? column.name,
                     hidden: column?.hidden ?? false,
-                    sort: column.sort,
-                    sorted: {
-                        on: false,
-                    },
                 };
             }),
         [columns],
@@ -179,12 +152,10 @@ export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], o
         columnsByName: columnsByName,
         originalRows: tableData,
         rows: tableData,
-        sortColumn: null,
     });
 
-    React.useEffect(() => {
-        dispatch({ type: 'SET_ROWS', data: tableData });
-    }, [tableData]);
+    // setting rows to state on render
+    React.useEffect(() => dispatch({ type: 'SET_ROWS', data: tableData }), [tableData]);
 
     const headers: Header<T>[] = React.useMemo(() => {
         return [
@@ -202,8 +173,8 @@ export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], o
         headers: headers.filter((column) => !column.hidden),
         rows: state.rows,
         originalRows: state.originalRows,
-        dispatch, // not sure we want to expose dispatch here
-        toggleSort: (columnName: string) => dispatch({ type: 'TOGGLE_SORT', columnName }),
+        dispatch, // not sure we want to expose dispatch here????
+        filter: (columnName: string, value: string) => dispatch({ type: 'FILTER_COLUMN', columnName, value }),
     };
 };
 
@@ -215,7 +186,7 @@ const makeRender = <T extends Data>(
     return render ? () => render({ row, value }) : () => value;
 };
 
-const makeHeaderRender = (label: string, render: HeaderRenderType | undefined) => {
+const makeHeaderRender = (label: string, render: HeaderRender | undefined) => {
     return render ? () => render({ label }) : () => label;
 };
 
@@ -254,10 +225,4 @@ const getColumnsByName = <T extends Data>(columns: Column<T>[]): ColumnByNames<T
     });
 
     return columnsByName;
-};
-
-const getPaginatedData = <T extends Data>(rows: Row<T>[], perPage: number, page: number) => {
-    const start = (page - 1) * perPage;
-    const end = start + perPage;
-    return rows.slice(start, end);
 };

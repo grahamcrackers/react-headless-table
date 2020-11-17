@@ -1,4 +1,4 @@
-# React Final Table <!-- omit in toc -->
+# React Headless Table <!-- omit in toc -->
 
 ![CI](https://github.com/Buuntu/react-final-table/workflows/tests/badge.svg)
 [![License:
@@ -202,13 +202,9 @@ import makeData from 'makeData'; // replace this with your own data
 function App() {
     const { columns, rows } = makeData();
 
-    const { headers, rows, selectRow, selectedRows } = useTable(
-        memoColumns,
-        memoData,
-        {
-            selectable: true,
-        }
-    );
+    const { headers, rows, selectRow, selectedRows } = useTable(memoColumns, memoData, {
+        selectable: true,
+    });
 
     return (
         <>
