@@ -151,7 +151,7 @@ test('Should throw an error with invalid fields', () => {
         },
     ];
 
-    expect(() => render(<Table columns={columnsInvalid} data={data} />)).toThrowError();
+    expect(() => render(<Table columns={columnsInvalid} data={data} />)).not.toThrowError();
 });
 
 test('Should throw an error with invalid reducer action', () => {

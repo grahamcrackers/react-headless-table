@@ -86,7 +86,7 @@ const Template: Story = (args) => {
 
     const data = React.useMemo(() => makeData(23), []);
 
-    const { headers, rows } = useControlledTable(columns, data);
+    const { headers, rows, toggleSort } = useControlledTable(columns, data);
 
     return (
         <div style={{ display: 'flex' }}>

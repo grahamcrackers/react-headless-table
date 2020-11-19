@@ -1,5 +1,11 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import React from 'react';
 import { get } from './utils';
+
+/**
+ * Dictionary of string, value pairs
+ */
+type Dictionary<T> = { [key: string]: T };
 
 interface Column<T> {
     name: string;
@@ -7,6 +13,7 @@ interface Column<T> {
     hidden?: boolean;
     sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
     render?: ({ value, row }: { value: any; row: T }) => React.ReactNode;
+    filter?: (value: string) => void;
 }
 
 interface ColumnState<T> {
@@ -28,8 +35,13 @@ interface Data {
     [key: string]: any;
 }
 
+type ManualPaginationOptions = {
+    manual: boolean;
+    pages: number;
+};
+
 interface TableOptions {
-    manual?: boolean;
+    pagination?: boolean | ManualPaginationOptions;
 }
 
 type Cell = {
@@ -57,7 +69,16 @@ type Header<T> = {
     render: () => React.ReactNode;
 };
 
-type HeaderRenderType = ({ label }: { label: any }) => React.ReactNode;
+type HeaderRender = ({ label }: { label: any }) => React.ReactNode;
+
+type Paginator = {
+    nextPage: () => void;
+    prevPage: () => void;
+    page: number;
+    perPage: number;
+    canNext: boolean;
+    canPrev: boolean;
+};
 
 /** State Definition */
 type TableState<T extends Data> = {
@@ -65,10 +86,22 @@ type TableState<T extends Data> = {
     columns: ColumnState<T>[];
     rows: Row<T>[];
     originalRows: Row<T>[];
+    selectedRows: Row<T>[];
+    toggleAllState: boolean;
     sortColumn: string | null;
+    paginationEnabled: boolean;
+    paginationOptions?: ManualPaginationOptions | null;
+    pagination: Paginator;
 };
 
-type TableAction<T extends Data> = { type: 'SET_ROWS'; data: Row<T>[] } | { type: 'TOGGLE_SORT'; columnName: string };
+type TableAction<T extends Data> =
+    | { type: 'SET_ROWS'; data: Row<T>[] }
+    | { type: 'TOGGLE_SORT'; columnName: string }
+    | { type: 'TOGGLE_FILTER'; columnName: string }
+    | { type: 'TOGGLE_ALL' }
+    | { type: 'NEXT_PAGE' }
+    | { type: 'PREV_PAGE' }
+    | { type: 'SELECT_ROW'; rowId: number };
 
 const createReducer = <T extends Data>() => (state: TableState<T>, action: TableAction<T>): TableState<T> => {
     switch (action.type) {
@@ -119,15 +152,119 @@ const createReducer = <T extends Data>() => (state: TableState<T>, action: Table
                 sortColumn: action.columnName,
                 columnsByName: getColumnsByName(columnCopy),
             };
+        case 'NEXT_PAGE':
+            const nextPage = state.pagination.page + 1;
+
+            if (state.paginationOptions) {
+                return {
+                    ...state,
+                    pagination: {
+                        ...state.pagination,
+                        page: nextPage,
+                        canNext:
+                            nextPage * state.pagination.perPage <
+                            state.paginationOptions.pages * state.pagination.perPage,
+                        canPrev: nextPage !== 1,
+                    },
+                };
+            }
+            return {
+                ...state,
+                // rows: getPaginatedData(state.originalRows, state.pagination.perPage, nextPage),
+                // pagination: {
+                //     ...state.pagination,
+                //     page: nextPage,
+                //     canNext: nextPage * state.pagination.perPage < state.originalRows.length,
+                //     canPrev: nextPage !== 1,
+                // },
+            };
+        case 'PREV_PAGE':
+            const prevPage = state.pagination.page === 1 ? 1 : state.pagination.page - 1;
+
+            if (state.paginationOptions) {
+                return {
+                    ...state,
+                    pagination: {
+                        ...state.pagination,
+                        page: prevPage,
+                        canNext:
+                            prevPage * state.pagination.perPage <
+                            state.paginationOptions.pages * state.pagination.perPage,
+                        canPrev: prevPage !== 1,
+                    },
+                };
+            }
+            return {
+                ...state,
+                // rows: getPaginatedData(state.originalRows, state.pagination.perPage, prevPage),
+                // pagination: {
+                //     ...state.pagination,
+                //     page: prevPage,
+                //     canNext: prevPage * state.pagination.perPage < state.originalRows.length,
+                //     canPrev: prevPage !== 1,
+                // },
+            };
+        case 'SELECT_ROW':
+            const stateCopy = { ...state };
+
+            stateCopy.rows = stateCopy.rows.map((row) => {
+                const newRow = { ...row };
+                if (newRow.id === action.rowId) {
+                    newRow.selected = !newRow.selected;
+                }
+                return newRow;
+            });
+
+            stateCopy.originalRows = stateCopy.originalRows.map((row) => {
+                const newRow = { ...row };
+                if (newRow.id === action.rowId) {
+                    newRow.selected = !newRow.selected;
+                }
+                return newRow;
+            });
+
+            stateCopy.selectedRows = stateCopy.originalRows.filter((row) => row.selected === true);
+
+            stateCopy.toggleAllState =
+                stateCopy.selectedRows.length === stateCopy.rows.length
+                    ? (stateCopy.toggleAllState = true)
+                    : (stateCopy.toggleAllState = false);
+
+            return stateCopy;
+        case 'TOGGLE_ALL':
+            const stateCopyToggle = { ...state };
+            const rowIds: { [key: number]: boolean } = {};
+
+            if (state.selectedRows.length < state.rows.length) {
+                stateCopyToggle.rows = stateCopyToggle.rows.map((row) => {
+                    rowIds[row.id] = true;
+                    return { ...row, selected: true };
+                });
+
+                stateCopyToggle.toggleAllState = true;
+            } else {
+                stateCopyToggle.rows = stateCopyToggle.rows.map((row) => {
+                    rowIds[row.id] = false;
+
+                    return { ...row, selected: false };
+                });
+                stateCopyToggle.toggleAllState = false;
+            }
+
+            stateCopyToggle.originalRows = stateCopyToggle.originalRows.map((row) => {
+                return row.id in rowIds ? { ...row, selected: rowIds[row.id] } : { ...row };
+            });
+
+            stateCopyToggle.selectedRows = stateCopyToggle.originalRows.filter((row) => row.selected);
+
+            return stateCopyToggle;
+
         default:
             throw new Error('Invalid reducer action');
     }
 };
 
-/**
- * @deprecated don't use this
- */
-export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], options?: TableOptions) => {
+export const useManualTable = <T extends Data>(columns: Column<T>[], data: T[], options?: TableOptions) => {
     // mapping columns to internal state
     const mappedColumns = React.useMemo(
         () =>
@@ -179,12 +316,27 @@ export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], o
         columnsByName: columnsByName,
         originalRows: tableData,
         rows: tableData,
+        selectedRows: [],
+        toggleAllState: false, // will need to access refs for all inputs
         sortColumn: null,
+        paginationEnabled: !!options?.pagination,
+        paginationOptions: typeof options?.pagination === 'object' ? options?.pagination : null,
+        pagination: {
+            page: 1,
+            perPage: 10,
+            canNext: true,
+            canPrev: false,
+            nextPage: () => {},
+            prevPage: () => {},
+        },
     });
 
-    React.useEffect(() => {
-        dispatch({ type: 'SET_ROWS', data: tableData });
-    }, [tableData]);
+    // pagination controls
+    state.pagination.nextPage = React.useCallback(() => dispatch({ type: 'NEXT_PAGE' }), [dispatch]);
+    state.pagination.prevPage = React.useCallback(() => dispatch({ type: 'PREV_PAGE' }), [dispatch]);
+
+    // setting rows to state on render
+    React.useEffect(() => dispatch({ type: 'SET_ROWS', data: tableData }), [tableData]);
 
     const headers: Header<T>[] = React.useMemo(() => {
         return [
@@ -202,8 +354,12 @@ export const useBasicTable = <T extends Data>(columns: Column<T>[], data: T[], o
         headers: headers.filter((column) => !column.hidden),
         rows: state.rows,
         originalRows: state.originalRows,
+        selectedRows: state.selectedRows,
         dispatch, // not sure we want to expose dispatch here
+        selectRow: (rowId: number) => dispatch({ type: 'SELECT_ROW', rowId }),
+        toggleAll: () => dispatch({ type: 'TOGGLE_ALL' }),
         toggleSort: (columnName: string) => dispatch({ type: 'TOGGLE_SORT', columnName }),
+        pagination: state.pagination,
     };
 };
 
@@ -215,7 +371,7 @@ const makeRender = <T extends Data>(
     return render ? () => render({ row, value }) : () => value;
 };
 
-const makeHeaderRender = (label: string, render: HeaderRenderType | undefined) => {
+const makeHeaderRender = (label: string, render: HeaderRender | undefined) => {
     return render ? () => render({ label }) : () => label;
 };
 

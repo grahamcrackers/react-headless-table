@@ -86,7 +86,9 @@ const Template: Story = (args) => {
 
     const data = React.useMemo(() => makeData(10), []);
 
-    const { headers, rows } = useControlledTable(columns, data);
+    const { headers, rows, pagination, selectedRows, toggleSort, selectRow } = useControlledTable(columns, data, {
+        pagination: { pages: 4 },
+    });
 
     return (
         <div style={{ display: 'flex' }}>
@@ -94,19 +96,23 @@ const Template: Story = (args) => {
                 <table>
                     <thead>
                         <tr>
+                            <th></th>
                             {headers.map((header, idx) => (
-                                <th key={idx}>{header.label}</th>
+                                <th key={idx} onClick={() => toggleSort(header.name)}>
+                                    {header.label}
+
+                                    <span>{header.sorted.on ? (header.sorted.asc ? ' 🔽' : ' 🔼') : ''}</span>
+                                </th>
                             ))}
                         </tr>
                         <tr>
+                            <th></th>
                             {headers.map((header, idx) => (
                                 <th key={idx}>
                                     <input
                                         type="input"
                                         onChange={(e) => {
                                             header.filter(e.target.value);
-                                            // just store the value for now
-                                            // filter(header.name, e.target.value);
                                         }}
                                     />
                                 </th>
@@ -117,6 +123,14 @@ const Template: Story = (args) => {
                         {rows.map((row, idx) => {
                             return (
                                 <tr key={idx}>
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            onChange={(e) => {
+                                                selectRow(row.id);
+                                            }}
+                                        />
+                                    </td>
                                     {row.cells.map((cell, idx) => (
                                         <td key={idx}>{cell.render()}</td>
                                     ))}
@@ -125,11 +139,29 @@ const Template: Story = (args) => {
                         })}
                     </tbody>
                 </table>
+                <div>
+                    <button disabled={!pagination.canPrev} onClick={() => pagination.prevPage()}>
+                        {'<'}
+                    </button>
+                    <button disabled={!pagination.canNext} onClick={() => pagination.nextPage()}>
+                        {'>'}
+                    </button>
+                </div>
             </Styles>
             <div>
                 <h3>Headers</h3>
                 <pre>
                     <code>{JSON.stringify(headers, null, 4)}</code>
+                </pre>
+            </div>
+            <div>
+                <h3>Pagination</h3>
+                <pre>
+                    <code>{JSON.stringify(pagination, null, 4)}</code>
+                </pre>
+                <h3>Selected</h3>
+                <pre>
+                    <code>{JSON.stringify(selectedRows, null, 4)}</code>
                 </pre>
             </div>
         </div>
