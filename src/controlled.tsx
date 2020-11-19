@@ -15,7 +15,7 @@ interface ColumnState {
     label: string;
     hidden: boolean;
     filtered?: {
-        value: string;
+        value: unknown;
     };
 }
 
@@ -52,9 +52,9 @@ type Header<T> = {
     name: string;
     label?: string;
     hidden?: boolean;
-    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
     render: () => React.ReactNode;
-    // filter: (name: string, value: string) => void;
+    filter?: (value: string) => void;
+    sort?: ((a: Row<T>, b: Row<T>) => number) | undefined;
 };
 
 type HeaderRender = ({ label }: { label: any }) => React.ReactNode;
@@ -69,7 +69,7 @@ type TableState<T extends Data> = {
 
 type TableAction<T extends Data> =
     | { type: 'SET_ROWS'; data: Row<T>[] }
-    | { type: 'FILTER_COLUMN'; columnName: string; value: string };
+    | { type: 'FILTER_COLUMN'; columnName: string; value: unknown };
 
 const createReducer = <T extends Data>() => (state: TableState<T>, action: TableAction<T>): TableState<T> => {
     switch (action.type) {
@@ -82,12 +82,22 @@ const createReducer = <T extends Data>() => (state: TableState<T>, action: Table
                 originalRows: action.data,
             };
         case 'FILTER_COLUMN':
-            const columnsCopy = state.columns.map((column) => {
+            const columns = state.columns.map((column) => {
                 // if the column name from the action matches a column, add the filtered value to the header state
                 if (action.columnName === column.name) {
+                    // if no value remove filtered object
+                    if (!action.value) {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { filtered, ...rest } = column;
+                        return { ...rest };
+                    }
+
+                    // add filter value to header column object
                     return {
                         ...column,
-                        filtered: { value: action.value },
+                        filtered: {
+                            value: action.value,
+                        },
                     };
                 }
                 // if we don't match, return the column like nothing happened
@@ -96,7 +106,7 @@ const createReducer = <T extends Data>() => (state: TableState<T>, action: Table
 
             return {
                 ...state,
-                columns: columnsCopy,
+                columns: columns,
             };
         default:
             throw new Error('Invalid reducer action');
@@ -104,7 +114,7 @@ const createReducer = <T extends Data>() => (state: TableState<T>, action: Table
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const useFilterTable = <T extends Data>(columns: Column<T>[], data: T[], _options?: TableOptions) => {
+export const useControlledTable = <T extends Data>(columns: Column<T>[], data: T[], _options?: TableOptions) => {
     // mapping columns to internal state
     const mappedColumns = React.useMemo(
         () =>
@@ -164,6 +174,10 @@ export const useFilterTable = <T extends Data>(columns: Column<T>[], data: T[], 
                 return {
                     ...column,
                     render: makeHeaderRender(label, column.headerRender),
+                    // provide a filter on the header object
+                    filter: (value: string) => {
+                        dispatch({ type: 'FILTER_COLUMN', columnName: column.name, value });
+                    },
                 };
             }),
         ];
@@ -174,7 +188,6 @@ export const useFilterTable = <T extends Data>(columns: Column<T>[], data: T[], 
         rows: state.rows,
         originalRows: state.originalRows,
         dispatch, // not sure we want to expose dispatch here????
-        filter: (columnName: string, value: string) => dispatch({ type: 'FILTER_COLUMN', columnName, value }),
     };
 };
 

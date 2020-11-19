@@ -5,7 +5,7 @@ import { Meta, Story } from '@storybook/react';
 import React from 'react';
 import styled from 'styled-components';
 import { makeData } from './make-data';
-import { useManualTable } from '../src/filters';
+import { useControlledTable } from '../src';
 
 const Styles = (styled as any).div`
     padding: 1rem;
@@ -86,7 +86,7 @@ const Template: Story = (args) => {
 
     const data = React.useMemo(() => makeData(10), []);
 
-    const { headers, rows, filter } = useManualTable(columns, data);
+    const { headers, rows } = useControlledTable(columns, data);
 
     return (
         <div style={{ display: 'flex' }}>
@@ -100,12 +100,13 @@ const Template: Story = (args) => {
                         </tr>
                         <tr>
                             {headers.map((header, idx) => (
-                                <th>
+                                <th key={idx}>
                                     <input
                                         type="input"
                                         onChange={(e) => {
+                                            header.filter(e.target.value);
                                             // just store the value for now
-                                            filter(header.name, e.target.value);
+                                            // filter(header.name, e.target.value);
                                         }}
                                     />
                                 </th>

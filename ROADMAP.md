@@ -12,3 +12,4 @@ Ultimately the goal is to reach feature parity for sorting, filtering, and pagin
 -   [ ] multi column support
 -   [ ] accessing nested objects with the column "name"
 -   [ ] manual option for controlling data server side
+-   [ ] the select all problem [this might help](https://codesandbox.io/s/n7l7o19xjm?file=/src/index.js)

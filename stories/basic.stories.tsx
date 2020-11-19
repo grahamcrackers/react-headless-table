@@ -5,7 +5,7 @@ import { Meta, Story } from '@storybook/react';
 import React from 'react';
 import styled from 'styled-components';
 import { makeData } from './make-data';
-import { useManualTable } from '../src/basic';
+import { useControlledTable } from '../src';
 
 const Styles = (styled as any).div`
     padding: 1rem;
@@ -86,7 +86,7 @@ const Template: Story = (args) => {
 
     const data = React.useMemo(() => makeData(23), []);
 
-    const { headers, rows, toggleSort } = useManualTable(columns, data);
+    const { headers, rows } = useControlledTable(columns, data);
 
     return (
         <div style={{ display: 'flex' }}>

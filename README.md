@@ -1,25 +1,25 @@
-# React Headless Table <!-- omit in toc -->
+<h3 align="center">
+  react-headless-table
+</h3>
 
-![CI](https://github.com/Buuntu/react-final-table/workflows/tests/badge.svg)
+<p align="center">
+  A react table that's easy to use, easy to customize.
+</p>
+
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/Buuntu/react-final-table/branch/master/graph/badge.svg)](https://codecov.io/gh/Buuntu/react-final-table)
-![minzipped-size](https://img.shields.io/bundlephobia/minzip/react-final-table)
-![release](https://img.shields.io/npm/v/react-final-table)
+
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+![release](https://img.shields.io/badge/release-super%20alpha-red)
 
-A [headless UI component
-libray](https://www.merrickchristensen.com/articles/headless-user-interface-components/)
-for managing complex table state in React.
-
-Inspired by [react-table](https://github.com/tannerlinsley/react-table) but with
-Typescript support built in and a simpler API.
+Inspired by [react-table](https://github.com/tannerlinsley/react-table) but with Typescript support built in and a simpler API.
+Forked from [react-final-table](https://github.com/Buuntu/react-final-table)
 
 ## Features
 
 -   Type safe
--   Global row filtering
--   Row selection
+-   ~Global row filtering~
+-   Row selection~
 -   Custom column rendering
 -   Column sorting
 -   Data memoization for performance
@@ -43,30 +43,19 @@ Typescript support built in and a simpler API.
 
 ## Motivation
 
-While there is an abundance of table libraries out there to help with sorting,
-filtering, pagination, and more, most are opinionated about the user interface.
-Opinionated UIs can seem nice at first, but they quickly become limiting. To
-embrace the Unix philosphy of separation of concerns, the interface should be
-separate from the engine (from [The Art of Unix
-Programming](https://www.goodreads.com/book/show/104745.The_Art_of_UNIX_Programming)).
-
-This is a minimal, type-safe, headless UI component library that you can plugin
-to whatever frontend you're using, as long as you're using React 16 and
-[Hooks](https://reactjs.org/docs/hooks-intro.html). You are then free to style
-your table any way you want while using **React Final Table** to manage complex
-state changes.
+Yes, another table component. This is inspired by `react-table` but v7 seems
+to be all over the place with a crazy api that just doesn't look good. It's
+also lacking native typescript support and is just a big turn off. I also needed
+an easier to use controlled component for server side table rendering but still
+kept track of state so that I wouldn't have to maintain state outside of the table.
 
 ## Install
 
 ```bash
-npm install react-final-table
+npm install react-headless-table
 ```
 
 ## Demos
-
-### [CodeSandbox Demo](https://codesandbox.io/s/react-final-table-with-selection-zcodc)
-
-### [Material UI Demo](https://codesandbox.io/s/material-ui-react-final-table-example-sigrz)
 
 ## `useTable`
 
